@@ -1,5 +1,9 @@
+from pokeranch_server.server_service import Server
+
+
 def main():
-    pass
+    server = Server(8888)
+    server.start()
 
 
 if __name__ == '__main__':

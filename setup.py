@@ -7,7 +7,7 @@ setup(
     license='BSD3',
     packages=find_packages(),
     install_requires=[
-        'requests',
+        'aiohttp',
         'SQLAlchemy',
         'alembic'
     ],
