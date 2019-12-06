@@ -36,7 +36,7 @@ class Server:
         app.router.add_route('POST', '/auth', Handler.auth)
         app.router.add_route('POST', '/register', Handler.register)
         app.router.add_route('GET', '/get_profile', Handler.get_profile)
-        app.router.add_route('POST', '/save', Handler.save)
+        app.router.add_route('POST', '/save', Handler.save_progress)
 
         app.on_shutdown.append(self.on_shutdown)
 
@@ -47,7 +47,7 @@ class Handler:
     @staticmethod
     async def auth(request: web.Request):
         data = await request.json()
-        login = str(data.get('login', None))
+        login = data.get('login', None)
         password = data.get('password', None)
 
         db_service = DBService()
@@ -64,20 +64,43 @@ class Handler:
 
     @staticmethod
     async def register(request: web.Request):
-        data = request.json()
+        data = await request.json()
+        login = data.get('login', None)
+        mail = data.get('mail', None)
+        password = data.get('password', None)
+
+        if data is None or login is None or mail is None:
+            return web.json_response({'error_string': "Not enough arguments"}, status=400)
+
+        if '@' not in mail:
+            return web.json_response({'error_string': "Mail doesn't have '@' in it"}, status=400)
+
+        if '@' in login:
+            return web.json_response({'error_string': "Login has '@' in it"}, status=400)
+
         db_service = DBService()
-        if db_service.register_profile('keke', 'kjajsdljas', 'asjdga'):
-            return web.json_response({'registered': True})
-        return web.json_response({'registered': False})
+        if db_service.create_user(login=login, mail=mail, password=password):
+            return web.json_response({})
+        return web.json_response({'error_string': "User with such login or mail already exists"}, status=401)
 
     @staticmethod
-    async def save(request: web.Request):
-        data = request.json()
+    async def save_progress(request: web.Request):
+        data = await request.json()
+
         db_service = DBService()
-        return web.Response(body='save' + str(db_service.has_user_by_login('keke')))
+        if db_service.save_progress(data):
+            return web.json_response()
+        return web.json_response({'error_string': 'Wrong data or not enough data'}, status=400)
 
     @staticmethod
     async def get_profile(request: web.Request):
-        data = request.json()
+        data = await request.json()
+        login = data.get('login', None)
+
+        if login is None:
+            return web.json_response({'error_string': 'No login found'}, status=400)
+
         db_service = DBService()
-        return web.Response(body='get_profile')
+        user_exists = db_service.has_user_by_login(login)
+        # TODO(al): debug
+        return web.json_response({'exist': user_exists})

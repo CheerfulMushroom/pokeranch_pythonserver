@@ -23,20 +23,23 @@ class DBService:
     def generate_token(self):
         pass
 
-    def get_profile(self, login):
-        pass
-
-    def register_profile(self, login, mail, password):
+    def create_user(self, login, mail, password):
         login_exists = self.has_user_by_login(login)
         mail_exists = self.has_user_by_mail(mail)
 
         if login_exists or mail_exists:
             return False
         else:
-            new_user = User(login=login, mail=mail, password=password, pokemon_id=0)
+            new_user = User(login=login, mail=mail, password=password)
             self._session.add(new_user)
             self._session.commit()
             return True
+
+    def get_profile(self, login):
+        pass
+
+    def save_progress(self, data: dict):
+        pass
 
     def has_user_by_login(self, login):
         amount_of_users_with_login = self._session.query(User).filter_by(login=login).count()
@@ -45,6 +48,3 @@ class DBService:
     def has_user_by_mail(self, mail):
         amount_of_users_with_mail = self._session.query(User).filter_by(mail=mail).count()
         return bool(amount_of_users_with_mail)
-
-    def save_progress(self, **info):
-        pass
