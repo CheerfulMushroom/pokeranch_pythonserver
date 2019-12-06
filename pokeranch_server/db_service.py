@@ -1,7 +1,8 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from alembic.config import Config
-from pokeranch_server.models import User, Pokemon
+from pokeranch_server.models import User, Pokemon, Token
+import secrets
 
 
 class DBService:
@@ -13,15 +14,35 @@ class DBService:
 
     def auth(self, login=None, mail=None, password=None):
         if login is not None:
-            user_exists = self._session.query(User).filter_by(login=login, password=password).count()
-            return bool(user_exists)
-        if mail is not None:
-            user_exists = self._session.query(User).filter_by(mail=mail, password=password).count()
-            return bool(user_exists)
-        return False
+            user = self._session.query(User).filter_by(login=login, password=password)
+        elif mail is not None:
+            user = self._session.query(User).filter_by(mail=mail, password=password)
+        else:
+            return None
 
-    def generate_token(self):
-        pass
+        if user.count() == 0:
+            return None
+
+        user = user.first()
+        return self.generate_token(user.id)
+
+    def generate_token(self, user_id):
+        token = secrets.token_urlsafe(20)
+
+        while self._session.query(Token).filter_by(token=token).count():
+            token = str(secrets.token_urlsafe(20))
+
+        existing_token = self._session.query(Token).filter_by(user_id=user_id)
+        if existing_token.count() == 1:
+            new_token = existing_token.one()
+            new_token.token = token
+            self._session.commit()
+            return token
+
+        new_token = Token(user_id=user_id, token=token)
+        self._session.add(new_token)
+        self._session.commit()
+        return token
 
     def create_user(self, login, mail, password):
         login_exists = self.has_user_by_login(login)

@@ -52,15 +52,14 @@ class Handler:
 
         db_service = DBService()
         if '@' in login:
-            user_exists = db_service.auth(mail=login, password=password)
+            token = db_service.auth(mail=login, password=password)
         else:
-            user_exists = db_service.auth(login=login, password=password)
+            token = db_service.auth(login=login, password=password)
 
-        if user_exists:
-            token = db_service.generate_token()
-            return web.json_response({'token': token})
+        if token is None:
+            return web.json_response({'error_string': 'Invalid auth credentials'}, status=401)
 
-        return web.json_response({'error_string': 'Invalid auth credentials'}, status=401)
+        return web.json_response({'token': token})
 
     @staticmethod
     async def register(request: web.Request):

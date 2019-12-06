@@ -19,7 +19,7 @@ def upgrade():
     op.create_table(
         'tokens',
         sa.Column('user_id', sa.Integer(), nullable=False, unique=True),
-        sa.Column('token', sa.String(50), nullable=False, unique=True),
+        sa.Column('token', sa.String(20), nullable=False, unique=True),
         sa.PrimaryKeyConstraint('user_id'),
     )
 
