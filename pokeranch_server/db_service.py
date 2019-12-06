@@ -69,3 +69,7 @@ class DBService:
     def has_user_by_mail(self, mail):
         amount_of_users_with_mail = self._session.query(User).filter_by(mail=mail).count()
         return bool(amount_of_users_with_mail)
+
+    def logout(self, token=None):
+        token = self._session.query(Token).filter_by(token=token).delete()
+        self._session.commit()

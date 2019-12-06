@@ -37,8 +37,7 @@ class Server:
         app.router.add_route('POST', '/register', Handler.register)
         app.router.add_route('GET', '/get_profile', Handler.get_profile)
         app.router.add_route('POST', '/save', Handler.save_progress)
-
-        app.on_shutdown.append(self.on_shutdown)
+        app.router.add_route('POST', '/logout', Handler.logout)
 
         web.run_app(app, port=self._port)
 
@@ -103,3 +102,15 @@ class Handler:
         user_exists = db_service.has_user_by_login(login)
         # TODO(al): debug
         return web.json_response({'exist': user_exists})
+
+    @staticmethod
+    async def logout(request: web.Request):
+        data = await request.json()
+        token = data.get('token', None)
+
+        if token is None:
+            return web.json_response({'error_string': 'No token found'}, status=400)
+
+        db_service = DBService()
+        db_service.logout(token)
+        return web.json_response()
