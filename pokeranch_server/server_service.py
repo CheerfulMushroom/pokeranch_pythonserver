@@ -36,8 +36,12 @@ class Server:
         app.router.add_route('POST', '/auth', Handler.auth)
         app.router.add_route('POST', '/register', Handler.register)
         app.router.add_route('GET', '/get_profile', Handler.get_profile)
-        app.router.add_route('POST', '/save', Handler.save_progress)
         app.router.add_route('POST', '/logout', Handler.logout)
+        app.router.add_route('POST', '/add_pokemon', Handler.add_pokemon)
+        app.router.add_route('POST', '/save_pokemon', Handler.save_pokemon)
+        app.router.add_route('GET', '/get_pokemon', Handler.get_pokemon)
+
+        app.router.add_route('POST', '/test', Handler.test)
 
         web.run_app(app, port=self._port)
 
@@ -82,15 +86,6 @@ class Handler:
         return web.json_response({'error_string': "User with such login or mail already exists"}, status=401)
 
     @staticmethod
-    async def save_progress(request: web.Request):
-        data = await request.json()
-
-        db_service = DBService()
-        if db_service.save_progress(data):
-            return web.json_response()
-        return web.json_response({'error_string': 'Wrong data or not enough data'}, status=400)
-
-    @staticmethod
     async def get_profile(request: web.Request):
         data = await request.json()
         login = data.get('login', None)
@@ -99,7 +94,7 @@ class Handler:
             return web.json_response({'error_string': 'No login found'}, status=400)
 
         db_service = DBService()
-        user_exists = db_service.has_user_by_login(login)
+        user_exists = db_service.has_user(login=login)
         # TODO(al): debug
         return web.json_response({'exist': user_exists})
 
@@ -114,3 +109,46 @@ class Handler:
         db_service = DBService()
         db_service.logout(token)
         return web.json_response()
+
+    @staticmethod
+    async def add_pokemon(request: web.Request):
+        data = await request.json()
+        token = data.get('token', None)
+        if token is None:
+            return web.json_response({'error_string': 'No token found'}, status=400)
+
+        db_service = DBService()
+        if db_service.add_pokemon(data):
+            return web.json_response()
+        return web.json_response({'error_string': 'Wrong data or not enough data'}, status=400)
+
+    @staticmethod
+    async def save_pokemon(request: web.Request):
+        data = await request.json()
+        token = data.get('token', None)
+        if token is None:
+            return web.json_response({'error_string': 'No token found'}, status=400)
+
+        db_service = DBService()
+        if db_service.save_pokemon(data):
+            return web.json_response()
+        return web.json_response({'error_string': 'Wrong data or not enough data'}, status=400)
+
+    @staticmethod
+    async def get_pokemon(request: web.Request):
+        data = await request.json()
+        token = data.get('token', None)
+        if token is None:
+            return web.json_response({'error_string': 'No token found'}, status=400)
+
+        db_service = DBService()
+         # TODO(al) check token
+        if db_service.get_pokemon(data):
+            return web.json_response()
+        return web.json_response({'error_string': 'Wrong data or not enough data'}, status=400)
+
+    @staticmethod
+    async def test(request: web.Request):
+        db_service = DBService()
+
+        return web.json_response({"result": db_service.get_user_id(token='adasad')})

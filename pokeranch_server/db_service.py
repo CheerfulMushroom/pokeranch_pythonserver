@@ -45,8 +45,8 @@ class DBService:
         return token
 
     def create_user(self, login, mail, password):
-        login_exists = self.has_user_by_login(login)
-        mail_exists = self.has_user_by_mail(mail)
+        login_exists = self.has_user(login=login)
+        mail_exists = self.has_user(mail=mail)
 
         if login_exists or mail_exists:
             return False
@@ -59,17 +59,44 @@ class DBService:
     def get_profile(self, login):
         pass
 
-    def save_progress(self, data: dict):
-        pass
-
-    def has_user_by_login(self, login):
-        amount_of_users_with_login = self._session.query(User).filter_by(login=login).count()
-        return bool(amount_of_users_with_login)
-
-    def has_user_by_mail(self, mail):
-        amount_of_users_with_mail = self._session.query(User).filter_by(mail=mail).count()
-        return bool(amount_of_users_with_mail)
-
     def logout(self, token=None):
         token = self._session.query(Token).filter_by(token=token).delete()
         self._session.commit()
+
+    def has_user(self, login=None, mail=None):
+        if login is not None:
+            amount_of_users_with_login = self._session.query(User).filter_by(login=login).count()
+            return bool(amount_of_users_with_login)
+        if mail is not None:
+            amount_of_users_with_mail = self._session.query(User).filter_by(mail=mail).count()
+            return bool(amount_of_users_with_mail)
+
+    def get_user_id(self, login=None, mail=None, pokemon_id=None, token=None):
+        user = None
+
+        if login is not None:
+            user = self._session.query(User).filter_by(login=login).first()
+        elif mail is not None:
+            user = self._session.query(User).filter_by(mail=mail).first()
+        elif pokemon_id is not None:
+            user = self._session.query(Pokemon).filter_by(id=pokemon_id).first()
+        elif token is not None:
+            token_obj = self._session.query(Token).filter_by(token=token).first()
+            if token_obj is not None:
+                return token_obj.user_id
+            else:
+                return None
+
+        if user is not None:
+            return user.id
+        else:
+            return None
+
+    def add_pokemon(self, data: dict):
+        pass
+
+    def get_pokemon(self, data: dict):
+        pass
+
+    def save_pokemon(self, data: dict):
+        pass
