@@ -23,7 +23,6 @@ def upgrade():
         sa.Column('login', sa.String(50), nullable=False, unique=True),
         sa.Column('mail', sa.String(50), nullable=False, unique=True),
         sa.Column('password', sa.String(50), nullable=False),
-        sa.Column('pokemon_id', sa.Integer(), nullable=False, unique=True),
         sa.PrimaryKeyConstraint('id'),
     )
 

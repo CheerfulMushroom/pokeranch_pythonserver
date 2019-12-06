@@ -7,20 +7,20 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'users'
 
-    id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True)
+    id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True, autoincrement=True)
     login = sa.Column('login', sa.String(50), nullable=False, unique=True)
     mail = sa.Column('mail', sa.String(50), nullable=False, unique=True)
     password = sa.Column('password', sa.String(50), nullable=False)
-    pokemon_id = sa.Column('pokemon_id', sa.Integer(), nullable=False, unique=True)
 
     def __repr__(self):
-        return f"Login: {self.login}; PokID: {self.pokemon_id}"
+        return f"Login: {self.login}; ID: {self.id}"
 
 
 class Pokemon(Base):
     __tablename__ = 'pokemons'
 
-    id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True)
+    id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True, autoincrement=True)
+    owner_id = sa.Column('owner_id', sa.Integer(), nullable=False)
     name = sa.Column('name', sa.String(50), nullable=False)
     power = sa.Column('power', sa.Integer, nullable=False)
     agility = sa.Column('agility', sa.Integer(), nullable=False)
@@ -30,4 +30,4 @@ class Pokemon(Base):
     max_health = sa.Column('max_health', sa.Integer(), nullable=False)
 
     def __repr__(self):
-        return f'PokID: {self.id}; Name: {self.name}'
+        return f'PokName: {self.name}; PokID: {self.id}'
