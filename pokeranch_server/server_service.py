@@ -5,12 +5,13 @@ import json
 
 @web.middleware
 async def json_check(request, handler):
-    try:
-        await request.json()
-    except Exception as e:
-        error_message = f'Couldn\'t parse json: {e}'
-        print(error_message)
-        return web.Response(body=json.dumps({'error_message': error_message}), status=400)
+    if request.method == 'POST':
+        try:
+            await request.json()
+        except Exception as e:
+            error_message = f'Couldn\'t parse json: {e}'
+            print(error_message)
+            return web.Response(body=json.dumps({'error_message': error_message}), status=400)
     return await handler(request)
 
 
@@ -50,6 +51,10 @@ class Handler:
     @staticmethod
     async def auth(request: web.Request):
         data = await request.json()
+
+        if not all(key in data for key in ['login', 'password']):
+            return web.json_response({'error_string': 'No login or password found'}, status=400)
+
         login = data.get('login', None)
         password = data.get('password', None)
 
@@ -67,12 +72,13 @@ class Handler:
     @staticmethod
     async def register(request: web.Request):
         data = await request.json()
+
+        if not all(key in data for key in ['login', 'mail', 'password']):
+            return web.json_response({'error_string': "Not enough arguments"}, status=400)
+
         login = data.get('login', None)
         mail = data.get('mail', None)
         password = data.get('password', None)
-
-        if data is None or login is None or mail is None:
-            return web.json_response({'error_string': "Not enough arguments"}, status=400)
 
         if '@' not in mail:
             return web.json_response({'error_string': "Mail doesn't have '@' in it"}, status=400)
@@ -87,11 +93,13 @@ class Handler:
 
     @staticmethod
     async def get_profile(request: web.Request):
+        # reques
         data = await request.json()
-        login = data.get('login', None)
 
-        if login is None:
+        if not all(key in data for key in ['login']):
             return web.json_response({'error_string': 'No login found'}, status=400)
+
+        login = data.get('login', None)
 
         db_service = DBService()
         user_exists = db_service.has_user(login=login)
@@ -107,15 +115,19 @@ class Handler:
             return web.json_response({'error_string': 'No token found'}, status=400)
 
         db_service = DBService()
-        db_service.logout(token)
-        return web.json_response()
+        if db_service.logout(token):
+            return web.json_response()
+        else:
+            return web.json_response({'error_string': 'No token found'}, status=400)
 
     @staticmethod
     async def add_pokemon(request: web.Request):
         data = await request.json()
-        token = data.get('token', None)
-        if token is None:
+
+        if not all(key in data for key in ['token']):
             return web.json_response({'error_string': 'No token found'}, status=400)
+
+        token = data.get('token', None)
 
         db_service = DBService()
         if db_service.add_pokemon(data):
@@ -142,7 +154,7 @@ class Handler:
             return web.json_response({'error_string': 'No token found'}, status=400)
 
         db_service = DBService()
-         # TODO(al) check token
+        # TODO(al) check token
         if db_service.get_pokemon(data):
             return web.json_response()
         return web.json_response({'error_string': 'Wrong data or not enough data'}, status=400)

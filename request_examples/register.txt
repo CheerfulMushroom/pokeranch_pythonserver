@@ -1,0 +1,1 @@
+{"login":"mylogin", "mail":"mymail@", "password":"mypass"}

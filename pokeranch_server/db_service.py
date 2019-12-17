@@ -60,8 +60,12 @@ class DBService:
         pass
 
     def logout(self, token=None):
-        token = self._session.query(Token).filter_by(token=token).delete()
-        self._session.commit()
+        has_token = self._session.query(Token).filter_by(token=token).count()
+        if has_token:
+            token = self._session.query(Token).filter_by(token=token).delete()
+            self._session.commit()
+            return True
+        return False
 
     def has_user(self, login=None, mail=None):
         if login is not None:
