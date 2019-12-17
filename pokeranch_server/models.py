@@ -22,12 +22,12 @@ class Pokemon(Base):
     id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True, autoincrement=True)
     owner_id = sa.Column('owner_id', sa.Integer(), nullable=False)
     name = sa.Column('name', sa.String(50), nullable=False)
-    power = sa.Column('power', sa.Integer, nullable=False)
-    agility = sa.Column('agility', sa.Integer(), nullable=False)
-    loyalty = sa.Column('loyalty', sa.Integer(), nullable=False)
-    satiety = sa.Column('satiety', sa.Integer(), nullable=False)
-    health = sa.Column('health', sa.Integer(), nullable=False)
-    max_health = sa.Column('max_health', sa.Integer(), nullable=False)
+    power = sa.Column('power', sa.Integer, nullable=False, default=10)
+    agility = sa.Column('agility', sa.Integer(), nullable=False, default=7)
+    loyalty = sa.Column('loyalty', sa.Integer(), nullable=False, default=50)
+    satiety = sa.Column('satiety', sa.Integer(), nullable=False, default=100)
+    health = sa.Column('health', sa.Integer(), nullable=False, default=100)
+    max_health = sa.Column('max_health', sa.Integer(), nullable=False, default=100)
 
     def __repr__(self):
         return f'PokName: {self.name}; PokID: {self.id}'

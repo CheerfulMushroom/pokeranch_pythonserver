@@ -1,0 +1,8 @@
+{"token":"G0M_zP2CEWCMfel7sBDxIB0jRJg",
+ "name":"Pikachu",
+ "power":11,
+ "agility":8,
+ "loyalty":60,
+ "satiety":90,
+ "health":90,
+ "max_health":110}

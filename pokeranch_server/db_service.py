@@ -56,8 +56,23 @@ class DBService:
             self._session.commit()
             return True
 
-    def get_profile(self, login):
-        pass
+    def get_profile(self, token, login):
+        if self.get_user_id(token=token) is None:
+            return None
+
+        user = self._session.query(User).filter_by(login=login).first()
+        if user is None:
+            return None
+        user_data = dict()
+        user_data['id'] = user.id
+        user_data['login'] = user.login
+
+        pokemon = self._session.query(Pokemon).filter_by(owner_id=user.id).first()
+        if pokemon is None:
+            user_data['pokemon_name'] = None
+            return user_data
+        user_data['pokemon_name'] = pokemon.name
+        return user_data
 
     def logout(self, token=None):
         has_token = self._session.query(Token).filter_by(token=token).count()
@@ -96,11 +111,47 @@ class DBService:
         else:
             return None
 
-    def add_pokemon(self, data: dict):
-        pass
+    def add_pokemon(self, token, name):
+        user_id = self.get_user_id(token=token)
 
-    def get_pokemon(self, data: dict):
-        pass
+        has_pokemon = self._session.query(Pokemon).filter_by(owner_id=user_id).count()
+        if has_pokemon:
+            return False
+
+        new_pokemon = Pokemon(owner_id=user_id, name=name)
+        self._session.add(new_pokemon)
+        self._session.commit()
+        return True
 
     def save_pokemon(self, data: dict):
-        pass
+        token = data['token']
+        name = data['name']
+
+        user_id = self.get_user_id(token=token)
+        pokemon = self._session.query(Pokemon).filter_by(owner_id=user_id, name=name).first()
+        if pokemon is None:
+            return False
+
+        pokemon.agility = int(data['agility'])
+        pokemon.loyalty = int(data['loyalty'])
+        pokemon.satiety = int(data['satiety'])
+        pokemon.health = int(data['health'])
+        pokemon.max_health = int(data['max_health'])
+        self._session.commit()
+        return True
+
+    def get_pokemon(self, token, name):
+        user_id = self.get_user_id(token=token)
+        pokemon = self._session.query(Pokemon).filter_by(owner_id=user_id).first()
+        if pokemon is None:
+            return None
+
+        data = dict()
+        data['name'] = name
+        data['agility'] = pokemon.agility
+        data['loyalty'] = pokemon.loyalty
+        data['satiety'] = pokemon.satiety
+        data['health'] = pokemon.health
+        data['max_health'] = pokemon.max_health
+
+        return data
