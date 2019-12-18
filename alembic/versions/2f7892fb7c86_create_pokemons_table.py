@@ -20,7 +20,7 @@ def upgrade():
         'pokemons',
         sa.Column('id', sa.Integer(), nullable=False, unique=True, autoincrement=True),
         sa.Column('owner_id', sa.Integer(), nullable=False),
-        sa.Column('name', sa.String(50), nullable=False),
+        sa.Column('name', sa.String(64), nullable=False),
         sa.Column('power', sa.Integer, nullable=False),
         sa.Column('agility', sa.Integer(), nullable=False),
         sa.Column('loyalty', sa.Integer(), nullable=False),

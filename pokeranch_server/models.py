@@ -8,9 +8,9 @@ class User(Base):
     __tablename__ = 'users'
 
     id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True, autoincrement=True)
-    login = sa.Column('login', sa.String(50), nullable=False, unique=True)
-    mail = sa.Column('mail', sa.String(50), nullable=False, unique=True)
-    password = sa.Column('password', sa.String(50), nullable=False)
+    login = sa.Column('login', sa.String(64), nullable=False, unique=True)
+    mail = sa.Column('mail', sa.String(64), nullable=False, unique=True)
+    password = sa.Column('password', sa.String(64), nullable=False)
 
     def __repr__(self):
         return f"Login: {self.login}; ID: {self.id}"
@@ -21,7 +21,7 @@ class Pokemon(Base):
 
     id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True, autoincrement=True)
     owner_id = sa.Column('owner_id', sa.Integer(), nullable=False)
-    name = sa.Column('name', sa.String(50), nullable=False)
+    name = sa.Column('name', sa.String(64), nullable=False)
     power = sa.Column('power', sa.Integer, nullable=False, default=10)
     agility = sa.Column('agility', sa.Integer(), nullable=False, default=7)
     loyalty = sa.Column('loyalty', sa.Integer(), nullable=False, default=50)
