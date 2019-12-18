@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from alembic.config import Config
-from pokeranch_server.models import User, Pokemon, Token
+from pokeranch_server.models import User, Pokemon, Token, Trainer
 import secrets
 
 
@@ -44,7 +44,7 @@ class DBService:
         self._session.commit()
         return token
 
-    def create_user(self, login, mail, password):
+    def add_profile(self, login, mail, password):
         login_exists = self.has_user(login=login)
         mail_exists = self.has_user(mail=mail)
 
@@ -55,6 +55,23 @@ class DBService:
             self._session.add(new_user)
             self._session.commit()
             return True
+
+    # TODO(al): unused
+    def save_profile(self, token, data: dict):
+
+        requirements = ['token', 'trainer']
+        if not all(key in data for key in requirements):
+            return False
+
+        token = data['token']
+        trainer = data['trainer']
+
+        user_id = self.get_user_id(token=token)
+        user = self._session.query(User).filter_by(id=user_id).first()
+        if user is None:
+            return False
+
+        pass
 
     def get_profile(self, token, login):
         if self.get_user_id(token=token) is None:
@@ -67,11 +84,18 @@ class DBService:
         user_data['id'] = user.id
         user_data['login'] = user.login
 
+        trainer = self._session.query(Trainer).filter_by(owner_id=user.id).first()
+        if trainer is None:
+            user_data['trainer_name'] = None
+        else:
+            user_data['pokemon_name'] = trainer.name
+
         pokemon = self._session.query(Pokemon).filter_by(owner_id=user.id).first()
         if pokemon is None:
             user_data['pokemon_name'] = None
-            return user_data
-        user_data['pokemon_name'] = pokemon.name
+        else:
+            user_data['pokemon_name'] = pokemon.name
+
         return user_data
 
     def logout(self, token=None):
@@ -111,6 +135,50 @@ class DBService:
         else:
             return None
 
+    # TRAINERS
+
+    def add_trainer(self, token, name):
+        user_id = self.get_user_id(token=token)
+
+        has_trainer = self._session.query(Trainer).filter_by(owner_id=user_id).count()
+        if has_trainer:
+            return False
+
+        new_trainer = Trainer(owner_id=user_id, name=name)
+        self._session.add(new_trainer)
+        self._session.commit()
+        return True
+
+    def save_trainer(self, data: dict):
+        requirements = ['token', 'name']
+        if not all(key in data for key in requirements):
+            return False
+
+        token = data['token']
+        name = data['name']
+
+        user_id = self.get_user_id(token=token)
+        trainer = self._session.query(Trainer).filter_by(owner_id=user_id, name=name).first()
+        if trainer is None:
+            return False
+
+        trainer.name = name
+        self._session.commit()
+        return True
+
+    def get_trainer(self, token):
+        user_id = self.get_user_id(token=token)
+        trainer = self._session.query(Trainer).filter_by(owner_id=user_id).first()
+        if trainer is None:
+            return None
+
+        data = dict()
+        data['name'] = trainer.name
+
+        return data
+
+    # POKEMONS
+
     def add_pokemon(self, token, name):
         user_id = self.get_user_id(token=token)
 
@@ -124,6 +192,10 @@ class DBService:
         return True
 
     def save_pokemon(self, data: dict):
+        requirements = ['token', 'name']
+        if not all(key in data for key in requirements):
+            return False
+
         token = data['token']
         name = data['name']
 
@@ -140,14 +212,14 @@ class DBService:
         self._session.commit()
         return True
 
-    def get_pokemon(self, token, name):
+    def get_pokemon(self, token):
         user_id = self.get_user_id(token=token)
         pokemon = self._session.query(Pokemon).filter_by(owner_id=user_id).first()
         if pokemon is None:
             return None
 
         data = dict()
-        data['name'] = name
+        data['name'] = pokemon.name
         data['agility'] = pokemon.agility
         data['loyalty'] = pokemon.loyalty
         data['satiety'] = pokemon.satiety

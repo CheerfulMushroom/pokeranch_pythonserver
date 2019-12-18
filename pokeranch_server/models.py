@@ -16,6 +16,16 @@ class User(Base):
         return f"Login: {self.login}; ID: {self.id}"
 
 
+class Trainer(Base):
+    __tablename__ = 'trainers'
+    id = sa.Column('id', sa.Integer(), nullable=False, unique=True, primary_key=True, autoincrement=True)
+    owner_id = sa.Column('owner_id', sa.Integer(), nullable=False)
+    name = sa.Column('name', sa.String(64), nullable=False)
+
+    def __repr__(self):
+        return f'TrainerName: {self.name}; TrainerID: {self.id}'
+
+
 class Pokemon(Base):
     __tablename__ = 'pokemons'
 

@@ -50,11 +50,12 @@ class Handler:
     async def auth(request: web.Request):
         data = await request.json()
 
-        if not all(key in data for key in ['login', 'password']):
-            return web.json_response({'error_string': 'No login or password found'}, status=400)
+        requirements = ['login', 'password']
+        if not all(key in data for key in requirements):
+            return web.json_response({"error_string": f"Not enough info. Must have {requirements}"}, status=400)
 
-        login = data.get('login', None)
-        password = data.get('password', None)
+        login = data['login']
+        password = data['password']
 
         db_service = DBService()
         if '@' in login:
@@ -63,7 +64,7 @@ class Handler:
             token = db_service.auth(login=login, password=password)
 
         if token is None:
-            return web.json_response({'error_string': 'Invalid auth credentials'}, status=401)
+            return web.json_response({'error_string': f"User not found"}, status=404)
 
         return web.json_response({'token': token})
 
@@ -71,8 +72,9 @@ class Handler:
     async def register(request: web.Request):
         data = await request.json()
 
-        if not all(key in data for key in ['login', 'mail', 'password']):
-            return web.json_response({'error_string': "Not enough arguments"}, status=400)
+        requirements = ['login', 'mail', 'password']
+        if not all(key in data for key in requirements):
+            return web.json_response({"error_string": f"Not enough info. Must have {requirements}"}, status=400)
 
         login = data.get('login', None)
         mail = data.get('mail', None)
@@ -85,27 +87,27 @@ class Handler:
             return web.json_response({'error_string': "Login has '@' in it"}, status=400)
 
         db_service = DBService()
-        if db_service.create_user(login=login, mail=mail, password=password):
+        if db_service.add_profile(login=login, mail=mail, password=password):
             return web.json_response({})
-        return web.json_response({'error_string': "User with such login or mail already exists"}, status=401)
+        return web.json_response({'error_string': "User with such login or mail already exists"}, status=400)
 
     @staticmethod
     async def get_profile(request: web.Request):
         data = request.query
 
-        if not all(key in data for key in ['token', 'login']):
-            return web.json_response({'error_string': 'No login found'}, status=400)
+        requirements = ['token', 'login']
+        if not all(key in data for key in requirements):
+            return web.json_response({"error_string": f"Not enough info. Must have {requirements}"}, status=400)
 
-        token = data.get('token', None)
-        login = data.get('login', None)
+        token = data['token']
+        login = data['login']
 
         db_service = DBService()
 
         user_data = db_service.get_profile(token=token, login=login)
         if user_data is not None:
             return web.json_response(user_data)
-        return web.json_response({'error_string': "Wrong data or not enough data: must have 'login'"},
-                                 status=400)
+        return web.json_response({'error_string': f"Not found"}, status=404)
 
     @staticmethod
     async def logout(request: web.Request):
@@ -121,12 +123,63 @@ class Handler:
         else:
             return web.json_response({'error_string': 'No token found'}, status=400)
 
+    # TRAINERS
+
+    @staticmethod
+    async def add_trainer(request: web.Request):
+        data = await request.json()
+
+        requirements = ['token', 'name']
+        if not all(key in data for key in requirements):
+            return web.json_response({"error_string": f"Not enough info. Must have {requirements}"}, status=400)
+
+        token = data.get('token', None)
+        name = data.get('name', None)
+
+        db_service = DBService()
+        if db_service.add_trainer(token, name):
+            return web.json_response()
+        return web.json_response({'error_string': 'Wrong data or already exists: must have {requirements}'},
+                                 status=400)
+
+    @staticmethod
+    async def save_trainer(request: web.Request):
+        data = await request.json()
+
+        requirements = ['token', 'name', 'power', 'agility', 'loyalty', 'satiety', 'health', 'max_health']
+        if not all(key in data for key in requirements):
+            return web.json_response({'error_string': f"Not enough info. Must have {requirements}"}, status=400)
+
+        db_service = DBService()
+        if db_service.save_trainer(data):
+            return web.json_response()
+        return web.json_response({'error_string': f"Not found"}, status=404)
+
+    @staticmethod
+    async def get_trainer(request: web.Request):
+        data = request.query
+
+        requirements = ['token']
+        if not all(key in data for key in requirements):
+            return web.json_response({'error_string': f"Not enough info. Must have {requirements}"}, status=400)
+
+        db_service = DBService()
+        token = data['token']
+
+        trainer_data = db_service.get_trainer(token=token)
+        if trainer_data is not None:
+            return web.json_response(trainer_data)
+        return web.json_response({'error_string': f"Not found"}, status=404)
+
+    # POKEMONS
+
     @staticmethod
     async def add_pokemon(request: web.Request):
         data = await request.json()
 
-        if not all(key in data for key in ['token', 'name']):
-            return web.json_response({"error_string': 'Not enough info. Must have 'token', 'name'"}, status=400)
+        requirements = ['token', 'name']
+        if not all(key in data for key in requirements):
+            return web.json_response({"error_string": f"Not enough info. Must have {requirements}"}, status=400)
 
         token = data.get('token', None)
         name = data.get('name', None)
@@ -134,37 +187,34 @@ class Handler:
         db_service = DBService()
         if db_service.add_pokemon(token, name):
             return web.json_response()
-        return web.json_response({'error_string': 'Wrong data or pokemon exists'}, status=400)
+        return web.json_response({'error_string': 'Wrong data or already exists: must have {requirements}'},
+                                 status=400)
 
     @staticmethod
     async def save_pokemon(request: web.Request):
         data = await request.json()
-        if not all(key in data for key in ['token', 'name',
-                                           'power', 'agility', 'loyalty',
-                                           'satiety', 'health', 'max_health']):
-            return web.json_response({'error_string': "Not enough info. Must have 'token', 'name',"
-                                                      " 'power', 'agility', 'loyalty',"
-                                                      " 'satiety', 'health', 'max_health'"}, status=400)
+        requirements = ['token', 'name', 'power', 'agility', 'loyalty', 'satiety', 'health', 'max_health']
+
+        if not all(key in data for key in requirements):
+            return web.json_response({'error_string': f"Not enough info. Must have {requirements}"}, status=400)
 
         db_service = DBService()
         if db_service.save_pokemon(data):
             return web.json_response()
-        return web.json_response({'error_string': "Wrong data or not enough data: must have 'token', 'name', "
-                                                  "'power', 'agility', 'loyalty', "
-                                                  "'satiety', 'health', 'max_health'"}, status=400)
+        return web.json_response({'error_string': f"Not found"}, status=404)
 
     @staticmethod
     async def get_pokemon(request: web.Request):
         data = request.query
-        if not all(key in data for key in ['token', 'name']):
-            return web.json_response({'error_string': 'No token or name found'}, status=400)
+
+        requirements = ['token']
+        if not all(key in data for key in requirements):
+            return web.json_response({'error_string': f"Not enough info. Must have {requirements}"}, status=400)
 
         db_service = DBService()
         token = data['token']
-        name = data['name']
 
-        pokemon_data = db_service.get_pokemon(token=token, name=name)
+        pokemon_data = db_service.get_pokemon(token=token)
         if pokemon_data is not None:
             return web.json_response(pokemon_data)
-        return web.json_response({'error_string': "Wrong data or not enough data: must have 'token', 'name'"},
-                                 status=400)
+        return web.json_response({'error_string': f"Not found"}, status=404)
