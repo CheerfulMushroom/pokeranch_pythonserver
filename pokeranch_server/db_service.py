@@ -4,7 +4,10 @@ from alembic.config import Config
 from pokeranch_server.models import User, Pokemon, Token, Trainer
 import secrets
 
+from pokeranch_server.utils import singleton
 
+
+@singleton
 class DBService:
     def __init__(self):
         cfg = Config("alembic.ini")
