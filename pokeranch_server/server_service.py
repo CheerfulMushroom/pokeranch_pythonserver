@@ -16,9 +16,30 @@ async def json_check(request, handler):
 
 
 @web.middleware
+async def auth_check(request, handler):
+    if request.method not in ['POST', 'GET']:
+        return await handler(request)
+
+    data = dict()
+    if request.method == 'POST':
+        data = await request.json()
+    elif request.method == 'GET':
+        data = request.query
+
+    if 'token' in data:
+        token = data['token']
+
+        db_service = DBService()
+        if not db_service.profile_is_authorized(token=token):
+            return web.json_response({'error_string': f"Invalid token, not authorized"}, status=401)
+
+    return await handler(request)
+
+
+@web.middleware
 async def log_host(request, handler):
     addr = request.host
-    print(f"Connected: {addr}")
+    print(f"Connected: {request.rel_url}")
     return await handler(request)
 
 
@@ -33,11 +54,16 @@ class Server:
                            message='Server shutdown')
 
     def start(self):
-        app = web.Application(middlewares=[log_host, json_check])
+        app = web.Application(middlewares=[log_host, json_check, auth_check])
         app.router.add_route('POST', '/auth', Handler.auth)
         app.router.add_route('POST', '/register', Handler.register)
         app.router.add_route('GET', '/get_profile', Handler.get_profile)
         app.router.add_route('POST', '/logout', Handler.logout)
+
+        app.router.add_route('POST', '/add_trainer', Handler.add_trainer)
+        app.router.add_route('POST', '/save_trainer', Handler.save_trainer)
+        app.router.add_route('GET', '/get_trainer', Handler.get_trainer)
+
         app.router.add_route('POST', '/add_pokemon', Handler.add_pokemon)
         app.router.add_route('POST', '/save_pokemon', Handler.save_pokemon)
         app.router.add_route('GET', '/get_pokemon', Handler.get_pokemon)
@@ -139,7 +165,7 @@ class Handler:
         db_service = DBService()
         if db_service.add_trainer(token, name):
             return web.json_response()
-        return web.json_response({'error_string': 'Wrong data or already exists: must have {requirements}'},
+        return web.json_response({'error_string': f'Wrong data or already exists: must have {requirements}'},
                                  status=400)
 
     @staticmethod
@@ -187,7 +213,7 @@ class Handler:
         db_service = DBService()
         if db_service.add_pokemon(token, name):
             return web.json_response()
-        return web.json_response({'error_string': 'Wrong data or already exists: must have {requirements}'},
+        return web.json_response({'error_string': f'Wrong data or already exists: must have {requirements}'},
                                  status=400)
 
     @staticmethod

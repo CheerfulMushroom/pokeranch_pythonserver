@@ -1,1 +1,3 @@
-{"token":"7Hqx-ZSnVL2P_DxyYCiSpvvPo3o"}
+http://0.0.0.0:8888/logout
+
+{"token":"G0M_zP2CEWCMfel7sBDxIB0jRJg"}

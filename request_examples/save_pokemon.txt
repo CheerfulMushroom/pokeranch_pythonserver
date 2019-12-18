@@ -1,3 +1,5 @@
+http://0.0.0.0:8888/save_pokemon
+
 {"token":"G0M_zP2CEWCMfel7sBDxIB0jRJg",
  "name":"Pikachu",
  "power":11,

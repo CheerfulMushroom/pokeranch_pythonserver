@@ -1,1 +1,4 @@
-http://0.0.0.0:8888/add_pokemon?token=G0M_zP2CEWCMfel7sBDxIB0jRJg&name=Pikachu
+http://0.0.0.0:8888/add_pokemon
+
+{"token":"G0M_zP2CEWCMfel7sBDxIB0jRJg",
+"name":"Pikachu"}

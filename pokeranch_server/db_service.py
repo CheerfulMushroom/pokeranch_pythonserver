@@ -88,7 +88,7 @@ class DBService:
         if trainer is None:
             user_data['trainer_name'] = None
         else:
-            user_data['pokemon_name'] = trainer.name
+            user_data['trainer_name'] = trainer.name
 
         pokemon = self._session.query(Pokemon).filter_by(owner_id=user.id).first()
         if pokemon is None:
@@ -134,6 +134,12 @@ class DBService:
             return user.id
         else:
             return None
+
+    def profile_is_authorized(self, token):
+        user_id = self.get_user_id(token=token)
+        if user_id is None:
+            return False
+        return True
 
     # TRAINERS
 
@@ -192,7 +198,7 @@ class DBService:
         return True
 
     def save_pokemon(self, data: dict):
-        requirements = ['token', 'name']
+        requirements = ['token', 'name', 'power', 'agility', 'loyalty', 'satiety', 'health', 'max_health']
         if not all(key in data for key in requirements):
             return False
 
@@ -204,6 +210,7 @@ class DBService:
         if pokemon is None:
             return False
 
+        pokemon.power = int(data['power'])
         pokemon.agility = int(data['agility'])
         pokemon.loyalty = int(data['loyalty'])
         pokemon.satiety = int(data['satiety'])
@@ -220,6 +227,7 @@ class DBService:
 
         data = dict()
         data['name'] = pokemon.name
+        data['power'] = pokemon.power
         data['agility'] = pokemon.agility
         data['loyalty'] = pokemon.loyalty
         data['satiety'] = pokemon.satiety
