@@ -172,7 +172,7 @@ class Handler:
     async def save_trainer(request: web.Request):
         data = await request.json()
 
-        requirements = ['token', 'name', 'power', 'agility', 'loyalty', 'satiety', 'health', 'max_health']
+        requirements = ['token', 'name']
         if not all(key in data for key in requirements):
             return web.json_response({'error_string': f"Not enough info. Must have {requirements}"}, status=400)
 
