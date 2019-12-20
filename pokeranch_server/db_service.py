@@ -6,6 +6,8 @@ import secrets
 
 from pokeranch_server.utils import singleton
 
+import datetime
+
 
 @singleton
 class DBService:
@@ -195,7 +197,7 @@ class DBService:
         if has_pokemon:
             return False
 
-        new_pokemon = Pokemon(owner_id=user_id, name=name)
+        new_pokemon = Pokemon(owner_id=user_id, name=name, last_save_time=datetime.datetime.now())
         self._session.add(new_pokemon)
         self._session.commit()
         return True
@@ -219,6 +221,7 @@ class DBService:
         pokemon.satiety = int(data['satiety'])
         pokemon.health = int(data['health'])
         pokemon.max_health = int(data['max_health'])
+        pokemon.last_save_time = datetime.datetime.now()
         self._session.commit()
         return True
 
@@ -236,5 +239,6 @@ class DBService:
         data['satiety'] = pokemon.satiety
         data['health'] = pokemon.health
         data['max_health'] = pokemon.max_health
+        data['time_since_last_save'] = (datetime.datetime.now() - pokemon.last_save_time).seconds
 
         return data

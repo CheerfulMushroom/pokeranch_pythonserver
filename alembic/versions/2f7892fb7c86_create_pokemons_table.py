@@ -27,6 +27,7 @@ def upgrade():
         sa.Column('satiety', sa.Integer(), nullable=False),
         sa.Column('health', sa.Integer(), nullable=False),
         sa.Column('max_health', sa.Integer(), nullable=False),
+        sa.Column('last_save_time', sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
     )
 

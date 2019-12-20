@@ -38,6 +38,7 @@ class Pokemon(Base):
     satiety = sa.Column('satiety', sa.Integer(), nullable=False, default=100)
     health = sa.Column('health', sa.Integer(), nullable=False, default=100)
     max_health = sa.Column('max_health', sa.Integer(), nullable=False, default=100)
+    last_save_time = sa.Column('last_save_time', sa.DateTime(), nullable=False)
 
     def __repr__(self):
         return f'PokName: {self.name}; PokID: {self.id}'
