@@ -91,13 +91,13 @@ class DBService:
 
         trainer = self._session.query(Trainer).filter_by(owner_id=user.id).first()
         if trainer is None:
-            user_data['trainer_name'] = None
+            user_data['trainer_name'] = ""
         else:
             user_data['trainer_name'] = trainer.name
 
         pokemon = self._session.query(Pokemon).filter_by(owner_id=user.id).first()
         if pokemon is None:
-            user_data['pokemon_name'] = None
+            user_data['pokemon_name'] = ""
         else:
             user_data['pokemon_name'] = pokemon.name
 
