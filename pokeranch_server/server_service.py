@@ -68,7 +68,7 @@ class Server:
         app.router.add_route('POST', '/save_pokemon', Handler.save_pokemon)
         app.router.add_route('GET', '/get_pokemon', Handler.get_pokemon)
 
-        web.run_app(app, port=self._port)
+        web.run_app(app, port=self._port, reuse_port=True, reuse_address=True)
 
 
 class Handler:
