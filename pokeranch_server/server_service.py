@@ -60,11 +60,9 @@ class Server:
         app.router.add_route('GET', '/get_profile', Handler.get_profile)
         app.router.add_route('POST', '/logout', Handler.logout)
 
-        app.router.add_route('POST', '/add_trainer', Handler.add_trainer)
         app.router.add_route('POST', '/save_trainer', Handler.save_trainer)
         app.router.add_route('GET', '/get_trainer', Handler.get_trainer)
 
-        app.router.add_route('POST', '/add_pokemon', Handler.add_pokemon)
         app.router.add_route('POST', '/save_pokemon', Handler.save_pokemon)
         app.router.add_route('GET', '/get_pokemon', Handler.get_pokemon)
 
@@ -152,23 +150,6 @@ class Handler:
     # TRAINERS
 
     @staticmethod
-    async def add_trainer(request: web.Request):
-        data = await request.json()
-
-        requirements = ['token', 'name']
-        if not all(key in data for key in requirements):
-            return web.json_response({"error_string": f"Not enough info. Must have {requirements}"}, status=400)
-
-        token = data.get('token', None)
-        name = data.get('name', None)
-
-        db_service = DBService()
-        if db_service.add_trainer(token, name):
-            return web.json_response()
-        return web.json_response({'error_string': f'Wrong data or already exists: must have {requirements}'},
-                                 status=400)
-
-    @staticmethod
     async def save_trainer(request: web.Request):
         data = await request.json()
 
@@ -198,23 +179,6 @@ class Handler:
         return web.json_response({'error_string': f"Not found"}, status=404)
 
     # POKEMONS
-
-    @staticmethod
-    async def add_pokemon(request: web.Request):
-        data = await request.json()
-
-        requirements = ['token', 'name']
-        if not all(key in data for key in requirements):
-            return web.json_response({"error_string": f"Not enough info. Must have {requirements}"}, status=400)
-
-        token = data.get('token', None)
-        name = data.get('name', None)
-
-        db_service = DBService()
-        if db_service.add_pokemon(token, name):
-            return web.json_response()
-        return web.json_response({'error_string': f'Wrong data or already exists: must have {requirements}'},
-                                 status=400)
 
     @staticmethod
     async def save_pokemon(request: web.Request):

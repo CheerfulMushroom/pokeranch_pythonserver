@@ -171,7 +171,7 @@ class DBService:
         user_id = self.get_user_id(token=token)
         trainer = self._session.query(Trainer).filter_by(owner_id=user_id, name=name).first()
         if trainer is None:
-            return False
+            return self.add_trainer(token=token, name=name)
 
         trainer.name = name
         self._session.commit()
@@ -213,7 +213,7 @@ class DBService:
         user_id = self.get_user_id(token=token)
         pokemon = self._session.query(Pokemon).filter_by(owner_id=user_id, name=name).first()
         if pokemon is None:
-            return False
+            return self.add_pokemon(token=token, name=name)
 
         pokemon.power = int(data['power'])
         pokemon.agility = int(data['agility'])
