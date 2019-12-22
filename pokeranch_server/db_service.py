@@ -161,8 +161,8 @@ class DBService:
         return True
 
     def save_trainer(self, data: dict):
-        requirements = ['token', 'name']
-        if not all(key in data for key in requirements):
+        create_requirements = ['token', 'name']
+        if not all(key in data for key in create_requirements):
             return False
 
         token = data['token']
@@ -172,6 +172,10 @@ class DBService:
         trainer = self._session.query(Trainer).filter_by(owner_id=user_id, name=name).first()
         if trainer is None:
             return self.add_trainer(token=token, name=name)
+
+        update_requirements = ['token', 'name']
+        if not all(key in data for key in update_requirements):
+            return False
 
         trainer.name = name
         self._session.commit()
@@ -203,8 +207,8 @@ class DBService:
         return True
 
     def save_pokemon(self, data: dict):
-        requirements = ['token', 'name', 'power', 'agility', 'loyalty', 'satiety', 'health', 'max_health']
-        if not all(key in data for key in requirements):
+        create_requirements = ['token', 'name']
+        if not all(key in data for key in create_requirements):
             return False
 
         token = data['token']
@@ -214,6 +218,10 @@ class DBService:
         pokemon = self._session.query(Pokemon).filter_by(owner_id=user_id, name=name).first()
         if pokemon is None:
             return self.add_pokemon(token=token, name=name)
+
+        update_requirements = ['token', 'name', 'power', 'agility', 'loyalty', 'satiety', 'health', 'max_health']
+        if not all(key in data for key in update_requirements):
+            return False
 
         pokemon.power = int(data['power'])
         pokemon.agility = int(data['agility'])
@@ -239,6 +247,6 @@ class DBService:
         data['satiety'] = pokemon.satiety
         data['health'] = pokemon.health
         data['max_health'] = pokemon.max_health
-        data['time_since_last_save'] = (datetime.datetime.now() - pokemon.last_save_time).seconds
+        data['seconds_since_last_save'] = (datetime.datetime.now() - pokemon.last_save_time).seconds
 
         return data

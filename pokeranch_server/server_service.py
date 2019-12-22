@@ -143,7 +143,7 @@ class Handler:
 
         db_service = DBService()
         if db_service.logout(token):
-            return web.json_response()
+            return web.json_response({})
         else:
             return web.json_response({'error_string': 'No token found'}, status=400)
 
@@ -153,13 +153,13 @@ class Handler:
     async def save_trainer(request: web.Request):
         data = await request.json()
 
-        requirements = ['token', 'name']
-        if not all(key in data for key in requirements):
-            return web.json_response({'error_string': f"Not enough info. Must have {requirements}"}, status=400)
+        minimal_requirements = ['token', 'name']
+        if not all(key in data for key in minimal_requirements):
+            return web.json_response({'error_string': f"Not enough info. Must have {minimal_requirements}"}, status=400)
 
         db_service = DBService()
         if db_service.save_trainer(data):
-            return web.json_response()
+            return web.json_response({})
         return web.json_response({'error_string': f"Not found"}, status=404)
 
     @staticmethod
@@ -183,14 +183,14 @@ class Handler:
     @staticmethod
     async def save_pokemon(request: web.Request):
         data = await request.json()
-        requirements = ['token', 'name', 'power', 'agility', 'loyalty', 'satiety', 'health', 'max_health']
+        minimal_requirements = ['token', 'name']
 
-        if not all(key in data for key in requirements):
-            return web.json_response({'error_string': f"Not enough info. Must have {requirements}"}, status=400)
+        if not all(key in data for key in minimal_requirements):
+            return web.json_response({'error_string': f"Not enough info. Must have {minimal_requirements}"}, status=400)
 
         db_service = DBService()
         if db_service.save_pokemon(data):
-            return web.json_response()
+            return web.json_response({})
         return web.json_response({'error_string': f"Not found"}, status=404)
 
     @staticmethod
